@@ -1,0 +1,27 @@
+{
+  "name": "brainwaveai",
+  "version": "1.0.0",
+  "description": "This is an AI than can be used in Discord as a bot. It is currently in development and is not yet ready for use.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/bot.js",
+    "dev": "nodemon ./src/bot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noah-hrbth/BrainwaveAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noah-hrbth/BrainwaveAI/issues"
+  },
+  "homepage": "https://github.com/noah-hrbth/BrainwaveAI#readme",
+  "dependencies": {
+    "discord.js": "12.5.3",
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.20"
+  }
+}
