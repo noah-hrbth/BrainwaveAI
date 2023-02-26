@@ -1,25 +1,24 @@
 require("dotenv").config();
-const { Client } = require("discord.js");
-const client = new Client();
-
-// Login to Discord
-client.login(process.env.BOT_TOKEN);
 
 // Import OpenAI API
 const { Configuration, OpenAIApi } = require("openai");
-
 // Create OpenAI API configuration
 const configuration = new Configuration({
 	apiKey: process.env.OPENAI_API_KEY,
 });
-
 // Create OpenAI API instance
 const openai = new OpenAIApi(configuration);
 
+// Import Discord API
+const { Client, Discord } = require("discord.js");
+const client = new Client();
+
+const PREFIX = "/";
 client.on("message", async (msg) => {
-	if (!msg.content || msg.author.bot) return;
+	if (!msg.content || msg.author.bot || !msg.content.startsWith(PREFIX)) return;
+
 	try {
-		const prompt = msg.content;
+		const prompt = msg.content.replace(PREFIX, "");
 
 		// Send request to OpenAI API
 		const completion = await openai.createCompletion({
@@ -37,3 +36,6 @@ client.on("message", async (msg) => {
 		console.error(error);
 	}
 });
+
+// Login to Discord
+client.login(process.env.BOT_TOKEN);
