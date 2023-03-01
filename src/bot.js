@@ -34,14 +34,6 @@ client.on("message", async (msg) => {
 			messages: [...messages],
 		});
 
-		// old model: text-davinci-003
-		// const completion = await openai.createCompletion({
-		// 	model: "text-davinci-003",
-		// 	prompt: prompt,
-		// 	temperature: 0.2,
-		// 	max_tokens: 100,
-		// });
-
 		const response = completion.data.choices[0].message;
 
 		// Add bot response to messages array
