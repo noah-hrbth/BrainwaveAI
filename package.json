@@ -20,7 +20,8 @@
 	},
 	"homepage": "https://github.com/noah-hrbth/BrainwaveAI#readme",
 	"dependencies": {
-		"discord.js": "12.5.3",
+		"@discordjs/rest": "^1.5.0",
+		"discord.js": "^13.4.0",
 		"dotenv": "^16.0.3",
 		"node-fetch": "^3.3.0",
 		"nodemon": "^2.0.20",
