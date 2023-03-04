@@ -27,12 +27,13 @@ client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 
 	try {
-		const command = interaction.commandName;
+    const command = interaction.commandName;
+    const user = interaction.user;
 		// defer reply to show loading state and to handle longer responses (avoid 3s timeout)
 		await interaction.deferReply();
 
 		// Get user input
-		const prompt = interaction.options.getString("prompt");
+		const prompt = interaction.options.getString("prompt").trim();
 		// Add user input to messages array
 		messages.push({
 			role: "user",
@@ -50,9 +51,10 @@ client.on("interactionCreate", async (interaction) => {
 		messages.push(response);
 
 		// Send bot response to Discord
-		await interaction.editReply(response.content);
+		await interaction.editReply(`> ${user} asked: **${prompt}**\n\n${response.content.trim()}`);
 	} catch (error) {
-		console.error(error);
+    console.error(error);
+    await interaction.editReply("There was an error while executing this command!");
 	}
 });
 
