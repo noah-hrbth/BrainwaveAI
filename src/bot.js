@@ -26,43 +26,59 @@ const messages = [];
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 
-  try {
-    // Get user input
-    const prompt = interaction.options.getString("prompt");
-    // Add user input to messages array
+	try {
+		const command = interaction.commandName;
+		// defer reply to show loading state and to handle longer responses (avoid 3s timeout)
+		await interaction.deferReply();
+
+		// Get user input
+		const prompt = interaction.options.getString("prompt");
+		// Add user input to messages array
 		messages.push({
 			role: "user",
 			content: prompt,
 		});
-    // Send request with all messages (also prev) to OpenAI API
+
+		// Send request with all messages (also prev) to OpenAI API
 		const completion = await openai.createChatCompletion({
 			model: "gpt-3.5-turbo",
 			messages: [...messages],
-    });
-    // Get bot response
-    const response = completion.data.choices[0].message;
-    // Add bot response to messages array
-    messages.push(response);
-    // Send bot response to Discord
-		interaction.reply(response.content);
+		});
+		// Get bot response
+		const response = completion.data.choices[0].message;
+		// Add bot response to messages array
+		messages.push(response);
+
+		// Send bot response to Discord
+		await interaction.editReply(response.content);
 	} catch (error) {
 		console.error(error);
 	}
 });
 
 async function registerCommands() {
+	const optionsObject = {
+		name: "prompt",
+		description: "The prompt to send to the bot",
+		type: 3, // STRING
+		required: true,
+	};
 	const commands = [
 		{
 			name: "ask",
 			description: "Ask the bot a question",
-			options: [
-				{
-					name: "prompt",
-					description: "The prompt to send to the bot",
-					type: 3, // STRING
-					required: true,
-				},
-			],
+			options: [optionsObject],
+		},
+		// TODO: if code response is too long, buy a premium account
+		{
+			name: "code",
+			description: "Ask the bot to generate code",
+			options: [optionsObject],
+		},
+		{
+			name: "image",
+			description: "Ask the bot to generate an image",
+			options: [optionsObject],
 		},
 	];
 	try {
