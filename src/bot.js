@@ -81,11 +81,11 @@ async function registerCommands() {
 			description: "Ask the bot to generate code",
 			options: [optionsObject],
 		},
-		{
-			name: "image",
-			description: "Ask the bot to generate an image",
-			options: [optionsObject],
-		},
+		// {
+		// 	name: "image",
+		// 	description: "Ask the bot to generate an image",
+		// 	options: [optionsObject],
+		// },
 	];
 	try {
 		// Set the commands to be registered
