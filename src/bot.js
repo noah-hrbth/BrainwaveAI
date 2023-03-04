@@ -69,7 +69,6 @@ async function registerCommands() {
 			description: "Ask the bot a question",
 			options: [optionsObject],
 		},
-		// TODO: if code response is too long, buy a premium account
 		{
 			name: "code",
 			description: "Ask the bot to generate code",
