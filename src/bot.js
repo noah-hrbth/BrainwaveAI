@@ -27,7 +27,8 @@ client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 
 	try {
-		const command = interaction.commandName;
+    const command = interaction.commandName;
+    const user = interaction.user;
 		// defer reply to show loading state and to handle longer responses (avoid 3s timeout)
 		await interaction.deferReply();
 
@@ -50,7 +51,7 @@ client.on("interactionCreate", async (interaction) => {
 		messages.push(response);
 
 		// Send bot response to Discord
-		await interaction.editReply(`> **${prompt}**\n\n${response.content.trim()}`);
+		await interaction.editReply(`> ${user} asked: **${prompt}**\n\n${response.content.trim()}`);
 	} catch (error) {
     console.error(error);
     await interaction.editReply("There was an error while executing this command!");
