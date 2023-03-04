@@ -23,6 +23,11 @@ client.on("ready", () => {
 });
 
 const messages = [];
+// add botname to messages array so the bot knows its name
+messages.push({
+  role: "assistant",
+  content: "My name is Brainwave. I'm a bot that uses OpenAI's GPT-3 API to answer questions and generate code and images.",
+});
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 
@@ -38,7 +43,7 @@ client.on("interactionCreate", async (interaction) => {
 		messages.push({
 			role: "user",
 			content: prompt,
-		});
+    });
 
 		// Send request with all messages (also prev) to OpenAI API
 		const completion = await openai.createChatCompletion({
@@ -54,7 +59,7 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.editReply(`> ${user} asked: **${prompt}**\n\n${response.content.trim()}`);
 	} catch (error) {
     console.error(error);
-    await interaction.editReply("There was an error while executing this command!");
+    await interaction.editReply(`> ${user} asked: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`);
 	}
 });
 
