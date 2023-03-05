@@ -25,15 +25,16 @@ client.on("ready", () => {
 const messages = [];
 // add botname to messages array so the bot knows its name
 messages.push({
-  role: "assistant",
-  content: "My name is Brainwave. I'm a bot that uses OpenAI's GPT-3 API to answer questions and generate code and images.",
+	role: "assistant",
+	content:
+		"My name is Brainwave. I'm a bot that uses OpenAI's GPT-3 API to answer questions and generate code and images.",
 });
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 
 	try {
-    const command = interaction.commandName;
-    const user = interaction.user;
+		const command = interaction.commandName;
+		const user = interaction.user;
 		// defer reply to show loading state and to handle longer responses (avoid 3s timeout)
 		await interaction.deferReply();
 
@@ -42,8 +43,11 @@ client.on("interactionCreate", async (interaction) => {
 		// Add user input to messages array
 		messages.push({
 			role: "user",
-			content: prompt,
-    });
+			content:
+				command === "code"
+					? `This is a coding related question! ${prompt}`
+					: prompt,
+		});
 
 		// Send request with all messages (also prev) to OpenAI API
 		const completion = await openai.createChatCompletion({
@@ -56,10 +60,14 @@ client.on("interactionCreate", async (interaction) => {
 		messages.push(response);
 
 		// Send bot response to Discord
-		await interaction.editReply(`> ${user} asked: **${prompt}**\n\n${response.content.trim()}`);
+		await interaction.editReply(
+			`> ${user} asked: **${prompt}**\n\n${response.content.trim()}`
+		);
 	} catch (error) {
-    console.error(error);
-    await interaction.editReply(`> ${user} asked: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`);
+		console.error(error);
+		await interaction.editReply(
+			`> ${user} asked: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`
+		);
 	}
 });
 
