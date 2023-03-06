@@ -154,7 +154,7 @@ async function registerCommands() {
 							value: "1024x1024",
 						},
 						{
-							name: "medium",
+							name: "medium (default)",
 							value: "512x512",
 						},
 						{
