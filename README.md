@@ -1,4 +1,4 @@
-# BrainwaveAI
+# BrainwaveAI 🧠
 I created this bot mainly for myself and colleges to use ChatGPT even when it's down (what happens quite often🙈).
 First I just implemented an ask-feature based on davinci but later switch to GPT-3.5-turbo because I wanted to implement a feature where you can
 ask specific coding related questions. For that I needed the bot to remember previous messages and safe the conversation. 
