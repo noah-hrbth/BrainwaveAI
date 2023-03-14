@@ -3,6 +3,7 @@ const { Configuration, OpenAIApi } = require("openai");
 const { Client, MessageEmbed } = require("discord.js");
 const { Routes } = require("discord-api-types/v9");
 const { REST } = require("@discordjs/rest");
+const fs = require("fs");
 
 const { OPENAI_API_KEY, BOT_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
 
@@ -18,44 +19,95 @@ const client = new Client({ intents: [] });
 // Create a new REST instance
 const rest = new REST({ version: "10" }).setToken(BOT_TOKEN);
 
+const BOTS_FILE = "./bots.json";
+// safe all bot instances in a map
+const bots = new Map();
+
+class Brainwave {
+	constructor(openai) {
+		this.openai = openai;
+		this.messages = [];
+		// add botname to messages array so the bot knows its name
+		this.messages.push({
+			role: "assistant",
+			content:
+				"My name is Brainwave. I'm a bot that uses OpenAI's GPT-3 API to answer questions and generate code and images.",
+		});
+	}
+
+	async createImage(prompt, size) {
+		const completion = await this.openai.createImage({
+			prompt: prompt,
+			n: 1,
+			size: size,
+		});
+		return completion;
+	}
+
+	async createChatCompletion(prompt, command) {
+		this.messages.push({
+			role: "user",
+			content:
+				command === "code"
+					? `This is a coding related question! ${prompt}`
+					: prompt,
+		});
+
+		// Send request with all messages (also prev) to OpenAI API
+		const completion = await openai
+			.createChatCompletion({
+				model: "gpt-3.5-turbo",
+				messages: [...this.messages],
+			})
+			.catch(async (error) => {
+				console.error(error);
+				await interaction.editReply(
+					`> ${user} creates: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`
+				);
+			});
+		return completion;
+	}
+}
+
+// read bots.json file
+if (fs?.existsSync(BOTS_FILE)) {
+	const file = fs.readFileSync(BOTS_FILE);
+	const data = JSON.parse(file);
+	// create bot instances for each user
+	for (const [userId, messages] of Object.entries(data)) {
+		const brainwave = new Brainwave(openai);
+		brainwave.messages = messages;
+		bots.set(userId, brainwave);
+	}
+}
+
 client.on("ready", () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 });
 
-const messages = [];
-// add botname to messages array so the bot knows its name
-messages.push({
-	role: "assistant",
-	content:
-		"My name is Brainwave. I'm a bot that uses OpenAI's GPT-3 API to answer questions and generate code and images.",
-});
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isCommand()) return;
 	const command = interaction.commandName;
 	const user = interaction.user;
+	const userId = interaction.user.id;
+	// get bot instance for user
+	let brainwave = bots.get(userId);
+	// if no bot instance exists, create one
+	if (!brainwave) {
+		brainwave = new Brainwave(openai);
+		bots.set(userId, brainwave);
+	}
 
 	if (command === "image") {
 		try {
-      const prompt = interaction.options.getString("prompt").trim();
-      const size = interaction.options.getString("size") ?? "512x512";
-      
+			const prompt = interaction.options.getString("prompt").trim();
+			const size = interaction.options.getString("size") ?? "512x512";
+
 			// defer reply to show loading state and to handle longer responses (avoid 3s timeout)
 			await interaction.deferReply();
 
 			// Send request to OpenAI API
-			const completion = await openai
-				.createImage({
-					prompt: prompt,
-					n: 1,
-					size: size,
-				})
-				.catch(async (error) => {
-					console.error(error);
-					await interaction.editReply(
-						`> ${user} creates: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`
-					);
-				});
-			// TODO: add editing images and variations
+			const completion = await brainwave.createImage(prompt, size);
 			// Get bot response
 			const response = completion.data.data[0].url;
 			// create embeded image
@@ -81,31 +133,13 @@ client.on("interactionCreate", async (interaction) => {
 
 			// Get user input
 			const prompt = interaction.options.getString("prompt").trim();
-			// Add user input to messages array
-			messages.push({
-				role: "user",
-				content:
-					command === "code"
-						? `This is a coding related question! ${prompt}`
-						: prompt,
-			});
 
-			// Send request with all messages (also prev) to OpenAI API
-			const completion = await openai
-				.createChatCompletion({
-					model: "gpt-3.5-turbo",
-					messages: [...messages],
-				})
-				.catch(async (error) => {
-					console.error(error);
-					await interaction.editReply(
-						`> ${user} creates: **${prompt}**\n\nI'm sorry! There was an error or timeout while executing this command!`
-					);
-				});
 			// Get bot response
+			const completion = await brainwave.createChatCompletion(prompt, command);
 			const response = completion.data.choices[0].message;
 			// Add bot response to messages array
-			messages.push(response);
+			brainwave.messages.push(response);
+			saveBots();
 
 			// Send bot response to Discord
 			await interaction.editReply(
@@ -180,5 +214,21 @@ async function registerCommands() {
 
 registerCommands();
 
+function saveBots() {
+	const botsData = {};
+	bots.forEach((bot, key) => {
+		botsData[key] = bot.messages;
+	});
+	fs.writeFileSync(BOTS_FILE, JSON.stringify(botsData, null, 2));
+}
+
+// function deleteBots() {
+//   setInterval(() => {
+//     console.log("Deleting bots...");
+//   }, 1000);
+// }
+
 // start the bot
-client.login(BOT_TOKEN);
+client.login(BOT_TOKEN).catch((error) => {
+	console.error(error);
+});
